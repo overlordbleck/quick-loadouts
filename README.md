@@ -2,7 +2,7 @@
 
 <img width="899" height="392" alt="image" src="https://github.com/user-attachments/assets/5715231a-15a7-4990-87a6-83d2cc9b8f52" />
 
-Click the **plus icon** button in the top-right corner of a weapon's spawnmenu icon to add weapons to your loadout.
+Click the **plus icon** button in the bottom-right corner of a weapon's spawnmenu icon to add weapons to your loadout.
 
 On your first spawn, the normal gamemode loadout becomes your initial selection. Default weapons
 remain selected until you remove them. Saved selections replace the default loadout on subsequent
