@@ -112,6 +112,9 @@ net.Receive( "QuickLoadouts_Request", function( length, ply )
 end )
 
 hook.Add( "PlayerLoadout", "QuickLoadouts_ApplySelection", function( ply )
+    -- Return nil so other PlayerLoadout hooks and the gamemode can handle this spawn.
+    if hook.Run( "QuickLoadouts_CanApplyLoadout", ply ) == false then return end
+
     local selected = getLoadout( ply )
     if not selected then
         -- Run the normal gamemode loadout once to seed this player's selections.

@@ -5,6 +5,7 @@ local incoming = {}
 local now = 0
 local failSave = false
 local denied = false
+local loadoutAllowed
 local defaults = 0
 local ammoLimits = { [1] = 100, [2] = 5 }
 local weaponList = {
@@ -42,7 +43,10 @@ local environment = setmetatable( {
     },
     hook = {
         Add = function( event, _, callback ) callbacks[event] = callback end,
-        Run = function() return not denied end
+        Run = function( event )
+            if event == "QuickLoadouts_CanApplyLoadout" then return loadoutAllowed end
+            if event == "PlayerGiveSWEP" then return not denied end
+        end
     },
     GAMEMODE = {
         PlayerLoadout = function( _, ply )
@@ -93,6 +97,11 @@ local function selectWeapon( class, enabled )
     callbacks.QuickLoadouts_Request( 200, ply )
 end
 
+loadoutAllowed = false
+assert( callbacks.PlayerLoadout( ply ) == nil, "Blocked loadout prevented normal spawn handling" )
+assert( defaults == 0 and ply.saved == nil, "Blocked first spawn initialized a custom loadout" )
+assert( #ply.weapons == 0 and next( ply.ammo ) == nil, "Blocked first spawn granted weapons or ammo" )
+loadoutAllowed = nil
 spawn()
 assert( defaults == 1 and ply.QuickLoadoutsWeapons.weapon_pistol, "Default loadout was not seeded" )
 assert( ply.ammo[1] == 256 and ply.ammo[-1] == nil, "Initial ammo top-up failed" )
@@ -105,6 +114,18 @@ selectWeapon( "weapon_shotgun", true )
 spawn()
 assert( #ply.weapons == 1 and ply.weapons[1]:GetClass() == "weapon_shotgun", "Selection was not applied" )
 assert( ply.ammo[1] == 256 and ply.ammo[2] == 5, "Primary or secondary ammo was not supplied" )
+loadoutAllowed = false
+local saved = ply.saved
+local selection = ply.QuickLoadoutsWeapons
+local weapons = ply.weapons
+local ammo = ply.ammo
+assert( callbacks.PlayerLoadout( ply ) == nil, "Blocked custom loadout did not yield" )
+assert( ply.saved == saved and ply.QuickLoadoutsWeapons == selection, "Blocking changed the saved loadout" )
+assert( ply.weapons == weapons and ply.ammo == ammo, "Blocking modified weapons or ammo" )
+loadoutAllowed = true
+spawn()
+assert( #ply.weapons == 1 and ply.ammo[1] == 256, "Unblocking failed to restore the custom loadout" )
+loadoutAllowed = nil
 selectWeapon( "weapon_pistol", true )
 spawn()
 assert( ply.ammo[1] == 256 and ply.ammoGrants[1] == 1, "Shared ammo was granted twice" )

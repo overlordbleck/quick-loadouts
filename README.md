@@ -16,3 +16,17 @@ still apply.
 
 Designed for Sandbox and derived gamemodes using `ContentIcon` and `PlayerLoadout`. Other addons
 that override loadouts or replace the icon's `SetSpawnName` method may conflict.
+
+Servers can block custom loadouts per player with `QuickLoadouts_CanApplyLoadout( ply )`.
+Return `false` to skip Quick Loadouts for that spawn, allowing other `PlayerLoadout` hooks and the
+gamemode's normal loadout to run. Return nothing to leave the decision to other hooks. The check
+runs before initial selection setup, weapon grants, or ammo changes. Saved selections are preserved;
+players with an initialized loadout can still edit it while application is blocked.
+
+For example, place this in a server-side Lua file to restrict custom loadouts to admins:
+
+```lua
+hook.Add( "QuickLoadouts_CanApplyLoadout", "MyServer_RestrictCustomLoadouts", function( ply )
+    if not ply:IsAdmin() then return false end
+end )
+```
